@@ -4,7 +4,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 W, H = A4
 
@@ -115,7 +115,7 @@ def build():
 
     # ── HEADER ──────────────────────────────────────────────────────────────
     # Title: Historia in large italic serif feel
-    c.setFont("Helvetica-BoldOblique", 20); c.setFillColor(BORDER)
+    c.setFont("Helvetica-BoldOblique", 18); c.setFillColor(BORDER)
     c.drawCentredString(W/2, H-M-8, "Historia")
     c.setFont("Helvetica-Oblique", 7); c.setFillColor(ACCENT)
     c.drawCentredString(W/2, H-M-17, "Scheda del Personaggio")
