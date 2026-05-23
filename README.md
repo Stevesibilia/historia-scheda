@@ -21,31 +21,33 @@ The visual style uses a warm parchment palette with decorative borders, banner l
 ## Requirements
 
 - Python 3.8+
-- [reportlab](https://pypi.org/project/reportlab/)
-
-```bash
-pip install reportlab
-```
+- [just](https://github.com/casey/just) (optional but recommended)
 
 ## Usage
 
+### With just (recommended)
+
 ```bash
-python scheda_v3.py
+just          # generate the PDF (creates venv and installs deps automatically on first run)
+just open     # generate and open in the default viewer
+just setup    # explicit venv creation + install + generate
 ```
 
-The PDF is written to `/mnt/user-data/outputs/scheda_personaggio.pdf`.  
-Edit the `canvas.Canvas(...)` path at the top of `build()` if you want a different output location.
+The venv is created automatically the first time you run `just generate` or `just open` — no manual setup needed.
 
-With [just](https://github.com/casey/just):
+### Without just
 
 ```bash
-just         # generate the PDF
-just open    # generate and open in the default viewer
+python3 -m venv .venv
+.venv/bin/pip install reportlab
+.venv/bin/python scheda_v3.py
 ```
 
 ## Output
 
-`scheda_personaggio.pdf` — single A4 page, ready to print or fill digitally.
+The PDF is written to `output/scheda_personaggio_v{VERSION}.pdf`. The `output/` directory is created automatically. The version is defined by the `VERSION` constant at the top of `scheda_v3.py`.
+
+Pre-built PDFs are attached to each [GitHub release](https://github.com/Stevesibilia/historia-scheda/releases).
 
 ## License
 
