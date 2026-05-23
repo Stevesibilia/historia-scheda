@@ -76,10 +76,10 @@ def skill_row(c, x, y, name, attr, row_w):
     c.setFillColor(FILL_BG); c.setStrokeColor(BORDER); c.setLineWidth(0.8)
     c.circle(x+5, y+4, 4, fill=1, stroke=1)
     c.setFillColor(FILL_BG); c.setStrokeColor(BORDER); c.setLineWidth(0.6)
-    c.rect(x+13, y+1, 7, 7, fill=1, stroke=1)
-    c.roundRect(x+23, y, 16, 9, 1, fill=1, stroke=1)
+    c.rect(x+16, y+1, 7, 7, fill=1, stroke=1)
+    c.roundRect(x+28, y, 16, 9, 1, fill=1, stroke=1)
     c.setFont("Helvetica", 7.8); c.setFillColor(INK)
-    c.drawString(x+42, y+2, name)
+    c.drawString(x+48, y+2, name)
     c.setFont("Helvetica-Oblique", 6.5); c.setFillColor(ACCENT)
     c.drawRightString(x+row_w-2, y+2, f"({attr})"); c.setFillColor(INK)
 
@@ -164,9 +164,9 @@ def build():
     fancy_box(c, LX, sk_y, LW, sk_box_h, "Abilità", 9)
 
     c.setFont("Helvetica", 6); c.setFillColor(ACCENT)
-    c.drawString(LX+5,  sk_y+sk_box_h-16, "Prf")
-    c.drawString(LX+15, sk_y+sk_box_h-16, "Comp")
-    c.drawString(LX+26, sk_y+sk_box_h-16, "Mod")
+    c.drawString(LX+5,  sk_y+sk_box_h-16, "Cpt")
+    c.drawString(LX+16, sk_y+sk_box_h-16, "Mst")
+    c.drawString(LX+28, sk_y+sk_box_h-16, "Mdf")
     c.setFillColor(INK); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.4)
     c.line(LX+5, sk_y+sk_box_h-18, LX+LW-5, sk_y+sk_box_h-18)
 
