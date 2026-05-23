@@ -1,9 +1,10 @@
 import os
+import math
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 W, H = A4
 
@@ -202,21 +203,50 @@ def build():
     # bottom of stats grid (used to know how tall the center used)
     stat_bottom = stat_top - 2*CELL_H - SZ/2 - MODH - NAMH
 
-    # ── RIGHT: Competenze + Bonus boxino ────────────────────────────────────
-    # Bonus: small box top-right of the competenze title area
-    bonus_w, bonus_h = 36, 22
+    # ── RIGHT: Competenze + Bonus circle ────────────────────────────────────
     comp_box_h = body_top - sk_y   # same height as abilità column
     comp_y = sk_y
 
     # Competenze main box (full height of right column)
     fancy_box(c, RX, comp_y, RW, comp_box_h, "Competenze", 8.5)
 
-    # Bonus small box inset top-right inside competenze
-    bx = RX + RW - bonus_w - 6
-    by = comp_y + comp_box_h - bonus_h - 8
-    fancy_box(c, bx, by, bonus_w, bonus_h, "Bonus", 6.5)
+    # Bonus circle interrupting the top border
+    circ_r  = 20
+    circ_cx = RX + RW - circ_r - 8
+    circ_cy = comp_y + comp_box_h          # centre sits on the top edge
 
-    # competenze lines (below banner, leaving room for bonus box)
+    # erase the top border segment under the circle
+    c.setFillColor(PARCHMENT); c.setStrokeColor(PARCHMENT); c.setLineWidth(0)
+    c.rect(circ_cx - circ_r + 1, circ_cy - 3, (circ_r - 1) * 2, 6, fill=1, stroke=0)
+
+    # outer circle
+    c.setFillColor(PARCHMENT_DK); c.setStrokeColor(BORDER); c.setLineWidth(1.2)
+    c.circle(circ_cx, circ_cy, circ_r, fill=1, stroke=1)
+    # thin inner ring close to edge, leaving space for text
+    c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.4)
+    c.circle(circ_cx, circ_cy, circ_r - 3, fill=1, stroke=1)
+    # "bonus" curved along the inside bottom arc
+    arc_font, arc_size = "Helvetica-Oblique", 5.5
+    arc_text = "bonus"
+    arc_r = circ_r - 7        # text baseline radius (inside)
+    spacing = 1.0             # extra pt between characters
+    c.setFont(arc_font, arc_size); c.setFillColor(ACCENT)
+    char_widths = [c.stringWidth(ch, arc_font, arc_size) for ch in arc_text]
+    total_w = sum(char_widths) + spacing * (len(arc_text) - 1)
+    total_span = total_w / arc_r  # radians
+    angle = math.radians(270) - total_span / 2
+    for ch, cw in zip(arc_text, char_widths):
+        mid = angle + (cw / 2) / arc_r
+        x = circ_cx + arc_r * math.cos(mid)
+        y = circ_cy + arc_r * math.sin(mid)
+        c.saveState()
+        c.translate(x, y)
+        c.rotate(math.degrees(mid) + 90)
+        c.drawCentredString(0, 0, ch)
+        c.restoreState()
+        angle += (cw + spacing) / arc_r
+
+    # competenze lines
     lines_comp = int((comp_box_h - 26) // 13)
     for li in range(lines_comp):
         iline(c, RX+8, comp_y+comp_box_h-24-li*13, RW-16)
