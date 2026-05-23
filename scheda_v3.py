@@ -165,9 +165,9 @@ def build():
     fancy_box(c, LX, sk_y, LW, sk_box_h, "Abilità", 9)
 
     c.setFont("Helvetica", 6); c.setFillColor(ACCENT)
-    c.drawString(LX+5,  sk_y+sk_box_h-16, "Cpt")
-    c.drawString(LX+16, sk_y+sk_box_h-16, "Mst")
-    c.drawString(LX+28, sk_y+sk_box_h-16, "Mdf")
+    c.drawCentredString(LX+9,    sk_y+sk_box_h-16, "Cpt")
+    c.drawCentredString(LX+23.5, sk_y+sk_box_h-16, "Mst")
+    c.drawCentredString(LX+40,   sk_y+sk_box_h-16, "Mdf")
     c.setFillColor(INK); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.4)
     c.line(LX+5, sk_y+sk_box_h-18, LX+LW-5, sk_y+sk_box_h-18)
 
