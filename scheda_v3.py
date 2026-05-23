@@ -422,15 +422,19 @@ def build():
 
     c.setFillColor(INK)
 
-    # Conio
+    # Conio (shrunk to make room for XP below)
     conio_x = M + pf_col_w + 8
     conio_w = 72
-    fancy_box(c, conio_x, bot_y, conio_w, bot_h, "Conio", 7.5)
+    xp_h    = 62
+    xp_gap  = 6
+    conio_y = bot_y + xp_h + xp_gap
+    conio_h = bot_h - xp_h - xp_gap
+    fancy_box(c, conio_x, conio_y, conio_w, conio_h, "Conio", 7.5)
 
     # Totale conio value box
     cv_w, cv_h = conio_w - 20, 20
     cv_x = conio_x + 10
-    cv_y = bot_y + bot_h - 18 - cv_h
+    cv_y = conio_y + conio_h - 18 - cv_h
     c.setFont("Helvetica", 6); c.setFillColor(ACCENT)
     c.drawCentredString(conio_x + conio_w/2, cv_y + cv_h + 3, "Totale")
     c.setFillColor(PARCHMENT_DK); c.setStrokeColor(BORDER); c.setLineWidth(1.2)
@@ -441,7 +445,7 @@ def build():
     # Coin rows with generous write boxes
     coins = [("MO","Oro"),("MA","Argento"),("MR","Rame"),("MB","Bronzo")]
     coin_top   = cv_y - 8
-    coin_bot   = bot_y + 8
+    coin_bot   = conio_y + 8
     coin_gap   = (coin_top - coin_bot) / len(coins)
     wb_h       = max(16, coin_gap - 13)
 
@@ -455,6 +459,22 @@ def build():
         c.drawString(conio_x+22, lbl_y, name)
         c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.8)
         c.roundRect(conio_x+5, wb_y, conio_w-10, wb_h, 2, fill=1, stroke=1)
+
+    # XP (under Conio): "Livello ___" on top, XP write box below
+    fancy_box(c, conio_x, bot_y, conio_w, xp_h, "XP", 7.5)
+    c.setFont("Helvetica", 6.5); c.setFillColor(ACCENT)
+    lvl_y = bot_y + xp_h - 22
+    c.drawString(conio_x + 5, lvl_y, "Livello")
+    iline(c, conio_x + 28, lvl_y - 1, conio_w - 33)
+    xp_box_x = conio_x + 5
+    xp_box_w = conio_w - 10
+    xp_box_h = 32
+    xp_box_y = bot_y + 4
+    c.setFillColor(PARCHMENT_DK); c.setStrokeColor(BORDER); c.setLineWidth(1.2)
+    c.roundRect(xp_box_x, xp_box_y, xp_box_w, xp_box_h, 2, fill=1, stroke=1)
+    c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.4)
+    c.roundRect(xp_box_x+2, xp_box_y+2, xp_box_w-4, xp_box_h-4, 1, fill=1, stroke=1)
+    c.setFillColor(INK)
 
     # Equipaggiamento (fills rest, 2 columns)
     equip_x = conio_x + conio_w + 8
