@@ -426,14 +426,35 @@ def build():
     conio_x = M + pf_col_w + 8
     conio_w = 72
     fancy_box(c, conio_x, bot_y, conio_w, bot_h, "Conio", 7.5)
-    coins = [("MO","Monete d'Oro"),("MA","Monete d'Argento"),
-             ("MR","Monete di Rame"),("ME","Monete di Elettro"),("MB","Monete di Platino")]
-    c_gap = (bot_h - 22) / len(coins)
-    for ci,(code,name) in enumerate(coins):
-        cy_ = bot_y + bot_h - 20 - ci*c_gap
+
+    # Totale conio value box
+    cv_w, cv_h = conio_w - 20, 20
+    cv_x = conio_x + 10
+    cv_y = bot_y + bot_h - 18 - cv_h
+    c.setFont("Helvetica", 6); c.setFillColor(ACCENT)
+    c.drawCentredString(conio_x + conio_w/2, cv_y + cv_h + 3, "Totale")
+    c.setFillColor(PARCHMENT_DK); c.setStrokeColor(BORDER); c.setLineWidth(1.2)
+    c.roundRect(cv_x, cv_y, cv_w, cv_h, 2, fill=1, stroke=1)
+    c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.4)
+    c.roundRect(cv_x+2, cv_y+2, cv_w-4, cv_h-4, 1, fill=1, stroke=1)
+
+    # Coin rows with generous write boxes
+    coins = [("MO","Oro"),("MA","Argento"),("MR","Rame"),("MB","Bronzo")]
+    coin_top   = cv_y - 8
+    coin_bot   = bot_y + 8
+    coin_gap   = (coin_top - coin_bot) / len(coins)
+    wb_h       = max(16, coin_gap - 13)
+
+    for ci, (code, name) in enumerate(coins):
+        area_top = coin_top - ci * coin_gap
+        lbl_y    = area_top - 9
+        wb_y     = lbl_y - 3 - wb_h
         c.setFont("Helvetica-Bold", 6.5); c.setFillColor(BORDER)
-        c.drawString(conio_x+5, cy_+2, code)
-        iline(c, conio_x+22, cy_, conio_w-27)
+        c.drawString(conio_x+5, lbl_y, code)
+        c.setFont("Helvetica-Oblique", 5.5); c.setFillColor(ACCENT)
+        c.drawString(conio_x+22, lbl_y, name)
+        c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.8)
+        c.roundRect(conio_x+5, wb_y, conio_w-10, wb_h, 2, fill=1, stroke=1)
 
     # Equipaggiamento (fills rest)
     equip_x = conio_x + conio_w + 8
