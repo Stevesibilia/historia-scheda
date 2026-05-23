@@ -2,15 +2,16 @@ default: generate
 
 # Generate the character sheet PDF
 generate:
-    python scheda_v3.py
+    .venv/bin/python scheda_v3.py
 
 # Generate and open the PDF in the default viewer
 open: generate
-    open /mnt/user-data/outputs/scheda_personaggio.pdf
+    open output/scheda_personaggio_v$(.venv/bin/python -c "from scheda_v3 import VERSION; print(VERSION)").pdf
 
-# Install Python dependencies
+# Create the venv and install dependencies
 install:
-    pip install reportlab
+    python3 -m venv .venv
+    .venv/bin/pip install reportlab
 
-# Install dependencies and generate
+# Create venv, install, and generate
 setup: install generate

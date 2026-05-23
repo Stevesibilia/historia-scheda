@@ -1,6 +1,9 @@
+import os
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
+
+VERSION = "1.0.0"
 
 W, H = A4
 
@@ -90,7 +93,9 @@ def corner(c, x, y, fx=False, fy=False):
     c.restoreState()
 
 def build():
-    c = canvas.Canvas("/mnt/user-data/outputs/scheda_personaggio.pdf", pagesize=A4)
+    os.makedirs("output", exist_ok=True)
+    out_path = f"output/scheda_personaggio_v{VERSION}.pdf"
+    c = canvas.Canvas(out_path, pagesize=A4)
     c.setTitle("Historia — Scheda del Personaggio")
 
     # background
@@ -358,6 +363,6 @@ def build():
     c.drawCentredString(W/2, 12, "✦  Historia  ✦")
 
     c.save()
-    print("Done!")
+    print(f"Done → {out_path}")
 
 build()
