@@ -123,14 +123,14 @@ def build():
     c.line(M+4, H-M-21, W-M-4, H-M-21)
 
     r1y = H-M-34
-    for fw,fl,fx in [(140,"Nome del Personaggio",M+4),(85,"Famiglia",M+152),
-                      (78,"Specie",M+245),(80,"Mestiere",M+331)]:
+    for fw,fl,fx in [(200,"Nome",M+4),(118,"Famiglia",M+212),
+                      (108,"Specie",M+338),(105,"Mestiere",M+454)]:
         iline(c, fx, r1y, fw, fl)
 
     r2y = r1y-18
-    for fw,fl,fx in [(60,"Iniziativa",M+4),(60,"Ispirazione",M+72),
-                      (60,"Velocità",M+140),(38,"PP",M+208),
-                      (148,"Ventura e Risalto",M+254)]:
+    for fw,fl,fx in [(72,"Iniziativa",M+4),(72,"Ispirazione",M+84),
+                      (72,"Velocità",M+164),(44,"PP",M+244),
+                      (263,"Ventura e Risalto",M+296)]:
         iline(c, fx, r2y, fw, fl)
 
     diam_line(c, M, r2y-10, W-M*2)
