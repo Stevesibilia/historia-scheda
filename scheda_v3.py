@@ -342,29 +342,66 @@ def build():
     bot_y   = M + 10
 
     # P. Ferita + Dadi Vita stacked in one column
-    pf_col_w = 68
-    pf_h     = (bot_h - 6) / 2
+    pf_col_w = 80
+    pf_h_dv  = bot_h * 0.38               # Dadi Vita: compact
+    pf_h_pf  = bot_h - pf_h_dv - 6       # P.Ferita: larger
 
-    # P. Ferita (top half)
-    fancy_box(c, M, bot_y + pf_h + 6, pf_col_w, pf_h, "P. Ferita", 7.5)
-    pf_y2 = bot_y + pf_h + 6
+    # ── Dadi Vita (bottom, smaller) ─────────────────────────────────────────
+    fancy_box(c, M, bot_y, pf_col_w, pf_h_dv, "Dadi Vita", 7.5)
     c.setFont("Helvetica", 6.5); c.setFillColor(ACCENT)
-    c.drawString(M+4, pf_y2+pf_h-16, "Massimo:")
-    iline(c, M+38, pf_y2+pf_h-14, pf_col_w-42)
-    c.drawString(M+4, pf_y2+pf_h-30, "Attuale:")
-    iline(c, M+34, pf_y2+pf_h-28, pf_col_w-38)
-    if pf_h > 48:
-        c.drawString(M+4, pf_y2+pf_h-44, "Temporanei:")
-        iline(c, M+46, pf_y2+pf_h-42, pf_col_w-50)
+    c.drawString(M+4, bot_y+pf_h_dv-16, "Totale:")
+    iline(c, M+30, bot_y+pf_h_dv-14, pf_col_w-34)
+    c.drawString(M+4, bot_y+pf_h_dv-30, "Tipo:")
+    iline(c, M+24, bot_y+pf_h_dv-28, pf_col_w-28)
     c.setFillColor(INK)
 
-    # Dadi Vita (bottom half)
-    fancy_box(c, M, bot_y, pf_col_w, pf_h, "Dadi Vita", 7.5)
+    # ── P. Ferita (top, larger) ──────────────────────────────────────────────
+    pf_y2 = bot_y + pf_h_dv + 6
+    fancy_box(c, M, pf_y2, pf_col_w, pf_h_pf, "P. Ferita", 7.5)
+
+    # Massimo: small label + short line at the top
     c.setFont("Helvetica", 6.5); c.setFillColor(ACCENT)
-    c.drawString(M+4, bot_y+pf_h-16, "Totale:")
-    iline(c, M+30, bot_y+pf_h-14, pf_col_w-34)
-    c.drawString(M+4, bot_y+pf_h-30, "Tipo:")
-    iline(c, M+24, bot_y+pf_h-28, pf_col_w-28)
+    c.drawString(M+5, pf_y2+pf_h_pf-18, "Massimo:")
+    iline(c, M+38, pf_y2+pf_h_pf-16, pf_col_w-43)
+
+    # Attuale + Temporanei: stacked vertically, full column width
+    box_w       = pf_col_w - 10
+    box_h       = 40
+    box_x       = M + 5
+    lbl_h       = 9
+    gap_lbl_box = 3
+    gap_boxes   = 10
+
+    region_top = pf_y2 + pf_h_pf - 26
+    region_bot = pf_y2 + 8
+    content_h  = lbl_h + gap_lbl_box + box_h + gap_boxes + lbl_h + gap_lbl_box + box_h
+    pad        = (region_top - region_bot - content_h) / 2
+
+    att_lbl_y = region_top - pad - lbl_h
+    att_box_y = att_lbl_y - gap_lbl_box - box_h
+    tmp_lbl_y = att_box_y - gap_boxes - lbl_h
+    tmp_box_y = tmp_lbl_y - gap_lbl_box - box_h
+
+    c.setFont("Helvetica", 6); c.setFillColor(ACCENT)
+    c.drawCentredString(box_x + box_w/2, att_lbl_y, "Attuali")
+    c.drawCentredString(box_x + box_w/2, tmp_lbl_y, "Temporanei")
+
+    # Attuale: solid, prominent (stat-block style)
+    c.setFillColor(PARCHMENT_DK); c.setStrokeColor(BORDER); c.setLineWidth(1.5)
+    c.roundRect(box_x, att_box_y, box_w, box_h, 3, fill=1, stroke=1)
+    c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.4)
+    c.roundRect(box_x+3, att_box_y+3, box_w-6, box_h-6, 2, fill=1, stroke=1)
+
+    # Temporanei: faded palette + dashed border
+    c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(1.0)
+    c.setDash(3, 2)
+    c.roundRect(box_x, tmp_box_y, box_w, box_h, 3, fill=1, stroke=1)
+    c.setDash()
+    c.setStrokeColor(colors.HexColor('#ddd0b0')); c.setLineWidth(0.3)
+    c.setDash(2, 2)
+    c.roundRect(box_x+3, tmp_box_y+3, box_w-6, box_h-6, 2, fill=0, stroke=1)
+    c.setDash()
+
     c.setFillColor(INK)
 
     # Conio
