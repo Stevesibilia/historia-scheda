@@ -1,7 +1,15 @@
 default: generate
 
+# Ensure venv exists with dependencies
+_venv:
+    #!/usr/bin/env sh
+    if [ ! -d ".venv" ]; then
+        python3 -m venv .venv
+        .venv/bin/pip install reportlab
+    fi
+
 # Generate the character sheet PDF
-generate:
+generate: _venv
     .venv/bin/python scheda_v3.py
 
 # Generate and open the PDF in the default viewer
