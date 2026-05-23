@@ -349,10 +349,28 @@ def build():
     # ── Dadi Vita (bottom, smaller) ─────────────────────────────────────────
     fancy_box(c, M, bot_y, pf_col_w, pf_h_dv, "Dadi Vita", 7.5)
     c.setFont("Helvetica", 6.5); c.setFillColor(ACCENT)
-    c.drawString(M+4, bot_y+pf_h_dv-16, "Totale:")
-    iline(c, M+30, bot_y+pf_h_dv-14, pf_col_w-34)
-    c.drawString(M+4, bot_y+pf_h_dv-30, "Tipo:")
-    iline(c, M+24, bot_y+pf_h_dv-28, pf_col_w-28)
+    c.drawString(M+4, bot_y+pf_h_dv-22, "Totale:")
+    iline(c, M+30, bot_y+pf_h_dv-20, pf_col_w-34)
+    c.drawString(M+4, bot_y+pf_h_dv-36, "Tipo:")
+    iline(c, M+24, bot_y+pf_h_dv-34, pf_col_w-28)
+
+    # 3 rows of 5 dots below Tipo, centred in remaining space
+    dot_r        = 4
+    dot_cols     = 4
+    dot_rows     = 4
+    dot_margin   = 16
+    dot_x_gap    = (pf_col_w - dot_margin * 2) / (dot_cols - 1)
+    dot_y_gap    = 10
+    space_top    = bot_y + pf_h_dv - 46
+    space_bot    = bot_y + 14
+    grid_h       = (dot_rows - 1) * dot_y_gap
+    dot_y_start  = (space_top + space_bot) / 2 + grid_h / 2
+    for row in range(dot_rows):
+        dy = dot_y_start - row * dot_y_gap
+        for col in range(dot_cols):
+            dx = M + dot_margin + col * dot_x_gap
+            c.setFillColor(FILL_BG); c.setStrokeColor(BORDER); c.setLineWidth(0.8)
+            c.circle(dx, dy, dot_r, fill=1, stroke=1)
     c.setFillColor(INK)
 
     # ── P. Ferita (top, larger) ──────────────────────────────────────────────
