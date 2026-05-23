@@ -361,8 +361,8 @@ def build():
 
     # Massimo: small label + short line at the top
     c.setFont("Helvetica", 6.5); c.setFillColor(ACCENT)
-    c.drawString(M+5, pf_y2+pf_h_pf-18, "Massimo:")
-    iline(c, M+38, pf_y2+pf_h_pf-16, pf_col_w-43)
+    c.drawString(M+5, pf_y2+pf_h_pf-32, "Massimo:")
+    iline(c, M+38, pf_y2+pf_h_pf-30, pf_col_w-43)
 
     # Attuale + Temporanei: stacked vertically, full column width
     box_w       = pf_col_w - 10
@@ -372,7 +372,7 @@ def build():
     gap_lbl_box = 3
     gap_boxes   = 10
 
-    region_top = pf_y2 + pf_h_pf - 26
+    region_top = pf_y2 + pf_h_pf - 40
     region_bot = pf_y2 + 8
     content_h  = lbl_h + gap_lbl_box + box_h + gap_boxes + lbl_h + gap_lbl_box + box_h
     pad        = (region_top - region_bot - content_h) / 2
