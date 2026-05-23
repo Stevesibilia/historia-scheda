@@ -4,7 +4,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 
 W, H = A4
 
@@ -130,7 +130,7 @@ def build():
     r2y = r1y-18
     for fw,fl,fx in [(72,"Iniziativa",M+4),(72,"Ispirazione",M+84),
                       (72,"Velocità",M+164),(44,"PP",M+244),
-                      (263,"Ventura e Risalto",M+296)]:
+                      (32,"Tg",M+296),(219,"Ventura e Risalto",M+340)]:
         iline(c, fx, r2y, fw, fl)
 
     diam_line(c, M, r2y-10, W-M*2)
