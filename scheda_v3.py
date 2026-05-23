@@ -456,13 +456,17 @@ def build():
         c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.8)
         c.roundRect(conio_x+5, wb_y, conio_w-10, wb_h, 2, fill=1, stroke=1)
 
-    # Equipaggiamento (fills rest)
+    # Equipaggiamento (fills rest, 2 columns)
     equip_x = conio_x + conio_w + 8
     equip_w = W - equip_x - M
     fancy_box(c, equip_x, bot_y, equip_w, bot_h, "Equipaggiamento", 7.5)
+    col_gap  = 8
+    col_w    = (equip_w - 10 - col_gap) / 2
     lines_eq = max(3, int((bot_h-20)//12))
-    for li in range(lines_eq):
-        iline(c, equip_x+5, bot_y+bot_h-22-li*12, equip_w-10)
+    for col in range(2):
+        cx = equip_x + 5 + col * (col_w + col_gap)
+        for li in range(lines_eq):
+            iline(c, cx, bot_y+bot_h-22-li*12, col_w)
 
     # footer
     c.setFont("Helvetica-Oblique", 5.5); c.setFillColor(LIGHT_LINE)
