@@ -495,4 +495,5 @@ def build():
     c.save()
     print(f"Done → {out_path}")
 
-build()
+if __name__ == "__main__":
+    build()
