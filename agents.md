@@ -17,8 +17,32 @@ Everything lives in `build()`. Helper functions are pure drawing utilities:
 | `stat_block` | Square stat box with inner frame and modifier sub-box |
 | `skill_row` | One skill row: proficiency circle, competence checkbox, mod box, name, attribute |
 | `corner` | Corner ornament drawn at the four page margins |
+| `tfield` | Transparent AcroForm text field laid over drawn decoration |
+| `cbox` | Invisible AcroForm checkbox laid over a drawn frame |
+| `dot` | Small tickable circle: drawn frame + circular checkbox |
+| `slug` | Accent-stripped snake_case name used for form field ids |
 
 Layout is coordinate-based (ReportLab canvas). The page is A4 (`W, H = A4`). Margin is `M = 16` pt. Columns are hand-computed as `LX/CX/RX` with widths `LW/CW/RW`.
+
+## Form Fields
+
+The sheet is fillable: every decoration is still drawn by hand, and a transparent
+AcroForm widget is laid on top of it. Rules:
+
+- Text fields go through `tfield` (or `iline(..., field="name")`, which places one
+  above the rule, after the label). Pass `q=Q_CENTRE` for numeric boxes.
+- Ruled free-text areas get one field per rule, not a single multiline field, so
+  typed text lands on the printed lines: number them `<area>_1`, `<area>_2`, …
+  from the top rule down (Equipaggiamento numbers straight through column 1 and
+  on into column 2).
+- Checkboxes go through `cbox` / `dot`. Never use reportlab's `shape='circle'`
+  checkbox: it mis-scales its own frame for any `size` other than 20 pt. Draw the
+  circle with `c.circle` and overlay `cbox(..., style='circle')` instead.
+- Do not set `NeedAppearances` on the AcroForm. It makes viewers discard the
+  reportlab appearance streams and redraw every checkbox as a plain square.
+- Field names are stable, lowercase, accent-free ids (`stat_for`, `cpt_atletica`,
+  `skmod_atletica`, `attacco1_danno`, `conio_mo`, …). Treat them as an API:
+  external tools fill the sheet by name, so rename only when necessary.
 
 ## Colour Palette
 
@@ -56,5 +80,7 @@ When the user wants a different output path, change that string directly — the
 **Add a new section**: follow the pattern of an existing section — compute `y` relative to the section above, call `diam_line` as a separator, then draw boxes with `fancy_box` and fill with `iline` rows.
 
 **Adjust spacing**: all vertical positions are derived from `body_top`, `sk_y`, `pers_y`, `combat_top`, `bot_top`. Change the gap constants (`pers_h`, `combat_h`, etc.) to resize sections.
+
+**Add a fillable input**: draw the decoration first, then overlay the widget with `tfield`, `cbox` or `dot` — never rely on the widget to draw its own border.
 
 **Change text**: skill names are in the `skills` list; stat names are in `stats`; coin codes/names are in `coins`; personality box names are in `pers_names`.

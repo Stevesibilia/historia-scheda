@@ -18,6 +18,19 @@ The generated character sheet includes:
 
 The visual style uses a warm parchment palette with decorative borders, banner labels, and corner ornaments.
 
+## Fillable form
+
+The PDF is a fillable AcroForm: every input has a text field or checkbox on top of
+the printed decoration, so the sheet can be filled in a PDF viewer or left blank and
+filled by hand. Field names are stable, accent-free ids (`nome`, `stat_for`,
+`mod_for`, `cpt_atletica`, `mst_atletica`, `skmod_atletica`, `attacco1_danno`,
+`conio_mo`, `dado_vita_7`, …), so the sheet can also be filled programmatically.
+
+Ruled areas (Competenze, Tratto/Ideale/Legame/Difetto, Azioni, Equipaggiamento) have
+one field per printed rule, numbered from the top down — `competenze_1`,
+`pers_tratto_1`, `azioni_1`, `equipaggiamento_1`, … Equipaggiamento numbers run down
+the left column and continue in the right one.
+
 ## Requirements
 
 - Python 3.8+
