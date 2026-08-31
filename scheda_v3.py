@@ -1,10 +1,12 @@
 import os
 import math
+import re
+import unicodedata
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 
 W, H = A4
 
@@ -15,6 +17,39 @@ BORDER       = colors.HexColor('#6b4c1e')
 ACCENT       = colors.HexColor('#8b3a0f')
 LIGHT_LINE   = colors.HexColor('#c4a96a')
 FILL_BG      = colors.HexColor('#fdf6e3')
+
+# text alignment codes for AcroForm text fields (/Q)
+Q_LEFT, Q_CENTRE, Q_RIGHT = 0, 1, 2
+
+def slug(text):
+    t = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode()
+    return re.sub(r'[^a-z0-9]+', '_', t.lower()).strip('_')
+
+def tfield(c, name, x, y, w, h, size=8, q=Q_LEFT):
+    """Transparent AcroForm text field laid over the already-drawn decoration."""
+    c.acroForm.textfield(
+        name=name, x=x, y=y, width=w, height=h,
+        fontName="Helvetica", fontSize=int(size),
+        textColor=INK, fillColor=None, borderColor=None, borderWidth=0,
+        forceBorder=False, maxlen=0, fieldFlags='', annotationFlags='print',
+    )
+    if q != Q_LEFT:
+        ref = c.acroForm.fields[-1]
+        c._doc.idToObject[ref.name].dict['Q'] = q
+
+def cbox(c, name, x, y, size, style='check'):
+    """Invisible AcroForm checkbox laid over an already-drawn frame."""
+    c.acroForm.checkbox(
+        name=name, x=x, y=y, size=size, shape='square', buttonStyle=style,
+        borderWidth=0, borderColor=None, fillColor=None, textColor=ACCENT,
+        forceBorder=False, fieldFlags='', annotationFlags='print',
+    )
+
+def dot(c, name, cx, cy, r):
+    """Small circle to tick: drawn frame + invisible circular checkbox."""
+    c.setFillColor(FILL_BG); c.setStrokeColor(BORDER); c.setLineWidth(0.8)
+    c.circle(cx, cy, r, fill=1, stroke=1)
+    cbox(c, name, cx-r, cy-r, r*2, style='circle')
 
 def fancy_box(c, x, y, w, h, title=None, ts=8.5):
     c.setFillColor(colors.HexColor('#c4a96a'))
@@ -43,12 +78,15 @@ def banner(c, cx, cy, text, size=8.5):
     c.setFillColor(PARCHMENT)
     c.drawCentredString(cx, by+3.5, text)
 
-def iline(c, x, y, w, label=None, ls=6.5):
+def iline(c, x, y, w, label=None, ls=6.5, field=None, fs=8, q=Q_LEFT):
     c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.6)
     c.line(x, y, x+w, y)
     if label:
         c.setFont("Helvetica", ls); c.setFillColor(ACCENT)
         c.drawString(x, y+2, label); c.setFillColor(INK)
+    if field:
+        off = c.stringWidth(label, "Helvetica", ls)+3 if label else 2
+        tfield(c, field, x+off, y+1.5, w-off-1, fs+2, size=fs, q=q)
 
 def diam_line(c, x, y, w):
     mid = x+w/2
@@ -60,25 +98,30 @@ def diam_line(c, x, y, w):
     c.setFillColor(ACCENT); c.setStrokeColor(BORDER); c.setLineWidth(0.5)
     c.drawPath(p, fill=1, stroke=1)
 
-def stat_block(c, cx, cy, label, sz=46):
+def stat_block(c, cx, cy, label, sz=46, key=None):
+    key = key or slug(label)
     bx, by = cx-sz/2, cy-sz/2
     c.setFillColor(PARCHMENT_DK); c.setStrokeColor(BORDER); c.setLineWidth(1.5)
     c.roundRect(bx, by, sz, sz, 6, fill=1, stroke=1)
     m = 5
     c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.5)
     c.roundRect(bx+m, by+m, sz-m*2, sz-m*2, 3, fill=1, stroke=1)
+    tfield(c, f"stat_{key}", bx+m+1, by+m+7, sz-m*2-2, 21, size=17, q=Q_CENTRE)
     # modifier box below — empty, no label
     mw, mh = sz*0.60, 13
     c.setFillColor(PARCHMENT_DK); c.setStrokeColor(BORDER); c.setLineWidth(1)
     c.roundRect(cx-mw/2, by-mh-2, mw, mh, 2, fill=1, stroke=1)
+    tfield(c, f"mod_{key}", cx-mw/2+1, by-mh-0.5, mw-2, 10, size=9, q=Q_CENTRE)
     banner(c, cx, by-mh-14, label, 7.2)
 
-def skill_row(c, x, y, name, attr, row_w):
-    c.setFillColor(FILL_BG); c.setStrokeColor(BORDER); c.setLineWidth(0.8)
-    c.circle(x+5, y+4, 4, fill=1, stroke=1)
+def skill_row(c, x, y, name, attr, row_w, key=None):
+    key = key or slug(name)
+    dot(c, f"cpt_{key}", x+5, y+4, 4)
     c.setFillColor(FILL_BG); c.setStrokeColor(BORDER); c.setLineWidth(0.6)
     c.rect(x+16, y+1, 7, 7, fill=1, stroke=1)
+    cbox(c, f"mst_{key}", x+16, y+1, 7)
     c.roundRect(x+28, y, 16, 9, 1, fill=1, stroke=1)
+    tfield(c, f"skmod_{key}", x+29, y+0.5, 14, 8, size=7, q=Q_CENTRE)
     c.setFont("Helvetica", 7.8); c.setFillColor(INK)
     c.drawString(x+48, y+2, name)
     c.setFont("Helvetica-Oblique", 6.5); c.setFillColor(ACCENT)
@@ -125,13 +168,13 @@ def build():
     r1y = H-M-34
     for fw,fl,fx in [(200,"Nome",M+4),(118,"Famiglia",M+212),
                       (108,"Specie",M+338),(105,"Mestiere",M+454)]:
-        iline(c, fx, r1y, fw, fl)
+        iline(c, fx, r1y, fw, fl, field=slug(fl))
 
     r2y = r1y-18
     for fw,fl,fx in [(72,"Iniziativa",M+4),(72,"Ispirazione",M+84),
                       (72,"Velocità",M+164),(44,"PP",M+244),
                       (32,"Tg",M+296),(219,"Ventura e Risalto",M+340)]:
-        iline(c, fx, r2y, fw, fl)
+        iline(c, fx, r2y, fw, fl, field=slug(fl), fs=7)
 
     diam_line(c, M, r2y-10, W-M*2)
 
@@ -173,7 +216,7 @@ def build():
 
     for i,(sk,attr) in enumerate(skills):
         sy = sk_y+sk_box_h-30-i*SK_H
-        skill_row(c, LX+4, sy, sk, attr, LW-8)
+        skill_row(c, LX+4, sy, sk, attr, LW-8, key=slug(sk))
         if i < len(skills)-1:
             c.setStrokeColor(colors.HexColor('#ddd0b0')); c.setLineWidth(0.25)
             c.line(LX+42, sy-1, LX+LW-6, sy-1)
@@ -194,11 +237,11 @@ def build():
     grid_ox = CX + (CW - grid_w)/2 + CELL_W/2
     stat_top = body_top - SZ/2 - 8
 
-    for idx,(sname,_) in enumerate(stats):
+    for idx,(sname,scode) in enumerate(stats):
         col = idx%2; row = idx//2
         sx = grid_ox + col*CELL_W
         sy = stat_top - row*CELL_H
-        stat_block(c, sx, sy, sname, SZ)
+        stat_block(c, sx, sy, sname, SZ, key=scode.lower())
 
     # bottom of stats grid (used to know how tall the center used)
     stat_bottom = stat_top - 2*CELL_H - SZ/2 - MODH - NAMH
@@ -245,11 +288,13 @@ def build():
         c.drawCentredString(0, 0, ch)
         c.restoreState()
         angle += (cw + spacing) / arc_r
+    tfield(c, "bonus_competenza", circ_cx-14, circ_cy-1, 28, 13, size=11, q=Q_CENTRE)
 
     # competenze lines
     lines_comp = int((comp_box_h - 26) // 13)
     for li in range(lines_comp):
-        iline(c, RX+8, comp_y+comp_box_h-24-li*13, RW-16)
+        iline(c, RX+8, comp_y+comp_box_h-24-li*13, RW-16,
+              field=f"competenze_{li+1}", fs=8)
 
     # ════════════════════════════════════════════════════════════════════════
     # PERSONALITY ROW: Tratto | Ideale | Legame | Difetto  (side by side)
@@ -268,7 +313,8 @@ def build():
         fancy_box(c, px, pers_y, pers_w, pers_h, pname, 8)
         lines_p = max(2, int((pers_h-20)//13))
         for li in range(lines_p):
-            iline(c, px+6, pers_y+pers_h-22-li*13, pers_w-12)
+            iline(c, px+6, pers_y+pers_h-22-li*13, pers_w-12,
+                  field=f"pers_{slug(pname)}_{li+1}", fs=8)
 
     # ════════════════════════════════════════════════════════════════════════
     # COMBAT SECTION: Classe Armatura | Attacchi | Azioni | Azioni Bonus | Reazioni
@@ -285,6 +331,8 @@ def build():
     c.setFillColor(FILL_BG); c.setStrokeColor(BORDER); c.setLineWidth(1.5)
     circ_r = 13
     c.circle(M+ca_w/2, ca_y+combat_h*0.68, circ_r, fill=1, stroke=1)
+    tfield(c, "classe_armatura", M+ca_w/2-12, ca_y+combat_h*0.68-7, 24, 14,
+           size=12, q=Q_CENTRE)
 
     # Indebolimento — dividing line, label, 6 fillable dots
     ind_label_y = ca_y + combat_h*0.38
@@ -298,8 +346,7 @@ def build():
     dot_spacing = (ca_w - 16) / (dot_count - 1)
     for di in range(dot_count):
         dx = M + 8 + di * dot_spacing
-        c.setFillColor(FILL_BG); c.setStrokeColor(BORDER); c.setLineWidth(0.8)
-        c.circle(dx, dot_y, dot_r, fill=1, stroke=1)
+        dot(c, f"indebolimento_{di+1}", dx, dot_y, dot_r)
 
     # Attacchi
     att_x = M + ca_w + 8
@@ -318,6 +365,11 @@ def build():
         c.line(att_x+4, ay, att_x+80, ay)
         c.line(att_x+82, ay, att_x+106, ay)
         c.line(att_x+108, ay, att_x+att_w-4, ay)
+        # rows are written in the gap *below* each rule
+        fy = ay - row_h_att + 2
+        tfield(c, f"attacco{i+1}_arma",  att_x+5,   fy, 74, 9, size=7)
+        tfield(c, f"attacco{i+1}_bonus", att_x+83,  fy, 22, 9, size=7, q=Q_CENTRE)
+        tfield(c, f"attacco{i+1}_danno", att_x+109, fy, att_w-114, 9, size=7)
 
     # Azioni / Azioni Bonus / Reazioni  (3 equal columns filling remaining width)
     act_x   = att_x + att_w + 8
@@ -330,7 +382,8 @@ def build():
         fancy_box(c, ax, ca_y, act_w, combat_h, aname, 7.5)
         lines_a = max(3, int((combat_h-22)//12))
         for li in range(lines_a):
-            iline(c, ax+5, ca_y+combat_h-24-li*12, act_w-10)
+            iline(c, ax+5, ca_y+combat_h-24-li*12, act_w-10,
+                  field=f"{slug(aname)}_{li+1}", fs=7)
 
     # ════════════════════════════════════════════════════════════════════════
     # BOTTOM ROW: [P.Ferita + Dadi Vita stacked] | Conio | Equipaggiamento
@@ -350,9 +403,9 @@ def build():
     fancy_box(c, M, bot_y, pf_col_w, pf_h_dv, "Dadi Vita", 7.5)
     c.setFont("Helvetica", 6.5); c.setFillColor(ACCENT)
     c.drawString(M+4, bot_y+pf_h_dv-22, "Totale:")
-    iline(c, M+30, bot_y+pf_h_dv-20, pf_col_w-34)
+    iline(c, M+30, bot_y+pf_h_dv-20, pf_col_w-34, field="dadi_vita_totale", fs=7)
     c.drawString(M+4, bot_y+pf_h_dv-36, "Tipo:")
-    iline(c, M+24, bot_y+pf_h_dv-34, pf_col_w-28)
+    iline(c, M+24, bot_y+pf_h_dv-34, pf_col_w-28, field="dadi_vita_tipo", fs=7)
 
     # 3 rows of 5 dots below Tipo, centred in remaining space
     dot_r        = 4
@@ -369,8 +422,7 @@ def build():
         dy = dot_y_start - row * dot_y_gap
         for col in range(dot_cols):
             dx = M + dot_margin + col * dot_x_gap
-            c.setFillColor(FILL_BG); c.setStrokeColor(BORDER); c.setLineWidth(0.8)
-            c.circle(dx, dy, dot_r, fill=1, stroke=1)
+            dot(c, f"dado_vita_{row*dot_cols+col+1}", dx, dy, dot_r)
     c.setFillColor(INK)
 
     # ── P. Ferita (top, larger) ──────────────────────────────────────────────
@@ -380,7 +432,7 @@ def build():
     # Massimo: small label + short line at the top
     c.setFont("Helvetica", 6.5); c.setFillColor(ACCENT)
     c.drawString(M+5, pf_y2+pf_h_pf-32, "Massimo:")
-    iline(c, M+38, pf_y2+pf_h_pf-30, pf_col_w-43)
+    iline(c, M+38, pf_y2+pf_h_pf-30, pf_col_w-43, field="pf_massimo", fs=7)
 
     # Attuale + Temporanei: stacked vertically, full column width
     box_w       = pf_col_w - 10
@@ -409,6 +461,7 @@ def build():
     c.roundRect(box_x, att_box_y, box_w, box_h, 3, fill=1, stroke=1)
     c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.4)
     c.roundRect(box_x+3, att_box_y+3, box_w-6, box_h-6, 2, fill=1, stroke=1)
+    tfield(c, "pf_attuali", box_x+5, att_box_y+12, box_w-10, 18, size=16, q=Q_CENTRE)
 
     # Temporanei: faded palette + dashed border
     c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(1.0)
@@ -419,6 +472,7 @@ def build():
     c.setDash(2, 2)
     c.roundRect(box_x+3, tmp_box_y+3, box_w-6, box_h-6, 2, fill=0, stroke=1)
     c.setDash()
+    tfield(c, "pf_temporanei", box_x+5, tmp_box_y+12, box_w-10, 18, size=16, q=Q_CENTRE)
 
     c.setFillColor(INK)
 
@@ -441,6 +495,7 @@ def build():
     c.roundRect(cv_x, cv_y, cv_w, cv_h, 2, fill=1, stroke=1)
     c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.4)
     c.roundRect(cv_x+2, cv_y+2, cv_w-4, cv_h-4, 1, fill=1, stroke=1)
+    tfield(c, "conio_totale", cv_x+3, cv_y+4, cv_w-6, cv_h-8, size=11, q=Q_CENTRE)
 
     # Coin rows with generous write boxes
     coins = [("MO","Oro"),("MA","Argento"),("MR","Rame"),("MB","Bronzo")]
@@ -459,13 +514,15 @@ def build():
         c.drawString(conio_x+22, lbl_y, name)
         c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.8)
         c.roundRect(conio_x+5, wb_y, conio_w-10, wb_h, 2, fill=1, stroke=1)
+        tfield(c, f"conio_{code.lower()}", conio_x+7, wb_y+(wb_h-12)/2,
+               conio_w-14, 12, size=9, q=Q_CENTRE)
 
     # XP (under Conio): "Livello ___" on top, XP write box below
     fancy_box(c, conio_x, bot_y, conio_w, xp_h, "XP", 7.5)
     c.setFont("Helvetica", 6.5); c.setFillColor(ACCENT)
     lvl_y = bot_y + xp_h - 22
     c.drawString(conio_x + 5, lvl_y, "Livello")
-    iline(c, conio_x + 28, lvl_y - 1, conio_w - 33)
+    iline(c, conio_x + 28, lvl_y - 1, conio_w - 33, field="livello", fs=7)
     xp_box_x = conio_x + 5
     xp_box_w = conio_w - 10
     xp_box_h = 32
@@ -474,6 +531,7 @@ def build():
     c.roundRect(xp_box_x, xp_box_y, xp_box_w, xp_box_h, 2, fill=1, stroke=1)
     c.setFillColor(FILL_BG); c.setStrokeColor(LIGHT_LINE); c.setLineWidth(0.4)
     c.roundRect(xp_box_x+2, xp_box_y+2, xp_box_w-4, xp_box_h-4, 1, fill=1, stroke=1)
+    tfield(c, "xp", xp_box_x+4, xp_box_y+9, xp_box_w-8, 14, size=11, q=Q_CENTRE)
     c.setFillColor(INK)
 
     # Equipaggiamento (fills rest, 2 columns)
@@ -486,7 +544,8 @@ def build():
     for col in range(2):
         cx = equip_x + 5 + col * (col_w + col_gap)
         for li in range(lines_eq):
-            iline(c, cx, bot_y+bot_h-22-li*12, col_w)
+            iline(c, cx, bot_y+bot_h-22-li*12, col_w,
+                  field=f"equipaggiamento_{col*lines_eq+li+1}", fs=7)
 
     # footer
     c.setFont("Helvetica-Oblique", 5.5); c.setFillColor(LIGHT_LINE)
